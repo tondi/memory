@@ -14,15 +14,19 @@ app.config(function($routeProvider) {
         })
         .when("/mode/30", {
             template: require("./components/game.component.html"),
-            component: 'game'
+            //component: 'game'
         })
-        // .otherwise({
-        //     redirectTo: "/"
-        // });
+        .when("/mode/60", {
+            template: require("./components/game.component.html"),
+            //component: 'game'
+        })
+        .otherwise({
+            redirectTo: "/"
+        });
 });
 
 angular.module('app').component('game', {
-    template: require('../app/components/game.component.html'),
+    template: require('./components/game.component.html'),
     controller: function() {
         this.$onInit = function() {
             this.tabsCtrl.addPane(this);
@@ -30,6 +34,32 @@ angular.module('app').component('game', {
         };
     }
 });
+
+app
+    .controller('timeCtrl', ['$scope', '$interval', function($scope, $interval) {
+        $scope.now = Date.now();
+        $interval(function() {
+            $scope.now = Date.now();
+        }, 1)
+    }])
+    .directive('time', [function($scope) {
+        return {
+            template: require("./components/time.component.html")
+        }
+    }]);
+
+
+
+app
+    .controller('gameCtrl', ['$scope', function($scope) {
+        $scope.imagesPath = "/src/public/img/";
+        $scope.imagesCount = 9;
+    }])
+    .directive('playfield', [function($scope) {
+        return {
+            template: require("./components/playfield.component.html")
+        }
+    }]);
 
 // let app = () => {
 //     return {
@@ -55,7 +85,7 @@ angular.module('app').component('game', {
 //     .directive('app', app)
 //     .controller('AppCtrl', AppCtrl);
 
-console.log(app)
+//console.log(app)
 
 // app.config(function($routeProvider) {
 //     $routeProvider
