@@ -1,3 +1,7 @@
 <div ng-controller="timeCtrl" class="time">
-    <span ng-bind="now"></span>
+    <div class="time-bar">
+        <div class="time-bar__background"></div>
+
+        <span>{{timeLeft | date:'mm:ss:sss'}}</span>
+    </div>
 </div>

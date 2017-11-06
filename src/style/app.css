@@ -1,18 +1,138 @@
 /* styles in src/style directory are applied to the whole page */
 
-body {}
-
-a {}
-
-main {
-    padding: 1em;
-    font-family: Arial, Helvetica, sans-serif;
-    text-align: center;
-    margin-top: 50px;
-    display: block;
+body {
+    overflow: hidden;
+    margin: 0;
 }
 
-footer {
-    text-align: center;
-    font-size: 0.8em;
+.game-mode {
+    /*width: 90vmin;*/
+    /*max-width: 760px;*/
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container > .ng-scope {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+
+    width: 83%;
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+.playfield {
+    display: grid;
+    grid-template-columns: 25% 25% 25% 25%;
+    grid-template-rows: 25% 25% 25% 25%;
+    width: 100%;
+}
+
+.playfield__container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 90vmin;
+    max-width: 760px;
+}
+
+.playfield__image {
+    width: 100%;
+    /*object-fit: */
+}
+
+.playfield__item {
+	perspective: 1000px;
+    cursor: pointer;
+    border-radius: 24px;
+}
+
+/* entire container, keeps perspective */
+	/* flip the pane when hovered */
+.flip .flipper {
+    transform: rotateY(180deg);
+}
+
+.playfield__item, .front, .back {
+    width: 100%;
+    padding-bottom: 100%;
+}
+
+
+/* flip speed goes here */
+.flipper {
+	transition: 0.6s;
+	transform-style: preserve-3d;
+
+	position: relative;
+}
+
+/* hide back of pane during swap */
+.front, .back {
+	backface-visibility: hidden;
+
+	position: absolute;
+	top: 0;
+	left: 0;
+
+    pointer-events: none;
+}
+
+/* front pane, placed above back */
+.front {
+	z-index: 2;
+	/* for firefox 31 */
+	transform: rotateY(0deg);
+}
+
+/* back, initially hidden pane */
+.back {
+	transform: rotateY(180deg);
+}
+
+.done .flipper {
+    transform: rotateY(180deg);
+}
+
+.summary {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-flow:column;
+    justify-content: center;
+    align-items: center;
+    background-color: cadetblue;
+}
+
+
+
+
+.time-bar {
+    position: relative;
+
+    width: 90vmin;
+    max-width: 760px;
+    border: 1px solid black;
+    display: flex;
+    justify-content:center;
+    align-items:center;
+
+    overflow: hidden;
+}
+
+.time-bar__background{
+    background-color: rgba(0,0,0,0.3);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width:100%;
+    height:100%;
+    z-index: -1;
 }
