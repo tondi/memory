@@ -48,30 +48,23 @@ app.controller('gameCtrl', ['$scope', '$window', function ($scope, $window) {
     app
     .controller('timeCtrl', ['$scope', '$rootScope', '$interval', '$window', '$location', function($scope, $rootScope, $interval, $window, $location) {
         $scope.format = 'mm:ss:sss';
-    }])
-    .directive('time', ['$interval', 'dateFilter', '$rootScope', '$window', '$location', function($interval, dateFilter,  $rootScope, $window, $location) {
-        function link(scope, element, attrs) {
-            var timeoutId;
-            let time;
+        let startTime = $window.location.hash.split("/mode/")[1] * 1000;
 
-            let startTime;
+        $scope.timeLeft = startTime;
 
-            let start;
+        $scope.$on('gameStartedBroadcast', function(){
+            console.log("recieeeved game start");
+
+
+            let start = Date.now();
             let timeLeft;
             let elapsed;
 
             let background = document.querySelector(".time-bar__background");
             let translate = 0;
-            // $scope.timeLeft = startTime;
 
-            scope.$watch(attrs.time, function(value) {
-                startTime = value * 1000;
-                updateTime();
-                element.text(dateFilter(startTime, scope.format));
-            });
-
-            function updateTime() {
-                scope.timeLeft = startTime - elapsed;
+            let timeInterval = $interval(function() {
+                $scope.timeLeft = startTime - elapsed;
                 elapsed = Date.now() - start;
                 translate = Math.round(elapsed * 100 * 100 / startTime ) / 100;
                 background.style.transform = `translateX(-${translate}%)`;
@@ -79,39 +72,79 @@ app.controller('gameCtrl', ['$scope', '$window', function ($scope, $window) {
                     background.style.backgroundColor = `red`;
                 }
                 if(startTime - elapsed <= 0) {
-                    scope.timeLeft = 0;
-                    $interval.cancel(timeoutId);
+                    $scope.timeLeft = 0;
+                    $interval.cancel(timeInterval);
                     $location.path('/summary')
                 }
+            }, 1);
+        });
 
-                element.text(dateFilter(scope.timeLeft, scope.format));
-            }
-
-
-
-            element.on('$destroy', function() {
-                $interval.cancel(timeoutId);
-            });
-
-            // start the UI update process; save the timeoutId for canceling
-            scope.$on('gameStartedBroadcast', function(){
-
-
-                start = Date.now();
-
-
-                console.log("recieeeved game start");
-
-                timeoutId = $interval(function() {
-                    updateTime(); // update DOM
-                }, 1);
-            });
-        }
+    }])
+    .directive('time', ['$interval', 'dateFilter', '$rootScope', '$window', '$location', function($interval, dateFilter,  $rootScope, $window, $location) {
+        // function link(scope, element, attrs) {
+        //     var timeoutId;
+        //     let time;
+        //
+        //     let startTime;
+        //
+        //     let start;
+        //     let timeLeft;
+        //     let elapsed;
+        //
+        //     let background = document.querySelector(".time-bar__background");
+        //     let translate = 0;
+        //     // $scope.timeLeft = startTime;
+        //
+        //     scope.$watch(attrs.time, function(value) {
+        //         startTime = value * 1000;
+        //         updateTime();
+        //         element.text(dateFilter(startTime, scope.format));
+        //     });
+        //
+        //     function updateTime() {
+        //         scope.timeLeft = startTime - elapsed;
+        //         elapsed = Date.now() - start;
+        //         translate = Math.round(elapsed * 100 * 100 / startTime ) / 100;
+        //         background.style.transform = `translateX(-${translate}%)`;
+        //         if(startTime / 100 * 20 > startTime - elapsed) {
+        //             background.style.backgroundColor = `red`;
+        //         }
+        //         if(startTime - elapsed <= 0) {
+        //             scope.timeLeft = 0;
+        //             $interval.cancel(timeoutId);
+        //             $location.path('/summary')
+        //         }
+        //
+        //         element.text(dateFilter(scope.timeLeft, scope.format));
+        //     }
+        //
+        //
+        //
+        //     element.on('$destroy', function() {
+        //         $interval.cancel(timeoutId);
+        //     });
+        //
+        //     // start the UI update process; save the timeoutId for canceling
+        //     scope.$on('gameStartedBroadcast', function(){
+        //
+        //
+        //         start = Date.now();
+        //
+        //
+        //         console.log("recieeeved game start");
+        //
+        //         timeoutId = $interval(function() {
+        //             updateTime(); // update DOM
+        //         }, 1);
+        //     });
+        // }
 
         return {
-            link: link,
+            // link: link,
+            scope: {
+                value: '=mode'
+            },
             template: require("./components/time.component.html")
-
         }
 
         // return {
@@ -143,14 +176,14 @@ app
             '8.jpg',
         ];
 
-        // let result = [];
-        // while(result.length < 16) {
-        //     let randomIndex = Math.floor((Math.random() * images.length ));
-        //     result.push(images[randomIndex]);
-        //     images.splice(randomIndex, 1);
-        // }
+        let result = [];
+        while(result.length < 16) {
+            let randomIndex = Math.floor((Math.random() * images.length ));
+            result.push(images[randomIndex]);
+            images.splice(randomIndex, 1);
+        }
 
-        $scope.images = images;
+        $scope.images = result;
 
         $scope.shown = [];
         let timeout;
