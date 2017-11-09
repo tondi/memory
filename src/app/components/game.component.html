@@ -1,8 +1,16 @@
 <div ng-controller="gameCtrl">
-    <time start="{{time}}">
-        czas
-    </time>
-    <div playfield class="playfield__container">
+    <!--<time start="{{mode}}" ></time>-->
+    <div ng-controller="timeCtrl" class="time">
+        <div class="time-bar">
+            <div class="time-bar__background"></div>
 
+            <!--<span>{{timeLeft | date:'mm:ss:sss'}}</span>-->
+            <span time="{{mode}}"></span>
+
+        </div>
     </div>
+
+    <playfield class="playfield__container">
+ 
+    </playfield>
 </div>

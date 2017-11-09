@@ -33,31 +33,45 @@ app.config(function($routeProvider) {
 });
 
 app.controller('gameCtrl', ['$scope', '$window', function ($scope, $window) {
-    $scope.time = $window.location.hash.split('').splice($window.location.hash.length - 2,).join('');
+    $scope.mode = $window.location.hash.split("/mode/")[1];
     $scope.$on('gameStarted', function(){
         $scope.$broadcast('gameStartedBroadcast', {})
     });
 }]);
 
-app
+    // app.directive('counter', ['$interval', 'dateFilter', '$rootScope', '$window', '$location', function($interval, dateFilter,  $rootScope, $window, $location) {
+    //     return {
+    //         template: require("./components/time.component.html")
+    //     }
+    // }]);
+
+    app
     .controller('timeCtrl', ['$scope', '$rootScope', '$interval', '$window', '$location', function($scope, $rootScope, $interval, $window, $location) {
+        $scope.format = 'mm:ss:sss';
+    }])
+    .directive('time', ['$interval', 'dateFilter', '$rootScope', '$window', '$location', function($interval, dateFilter,  $rootScope, $window, $location) {
+        function link(scope, element, attrs) {
+            var timeoutId;
+            let time;
 
-        let startTime = 10000;
-        $scope.timeLeft = startTime;
+            let startTime;
 
-        $scope.$on('gameStartedBroadcast', function(){
-            console.log("recieeeved game start");
-
-
-            let start = Date.now();
+            let start;
             let timeLeft;
             let elapsed;
 
             let background = document.querySelector(".time-bar__background");
             let translate = 0;
+            // $scope.timeLeft = startTime;
 
-            let timeInterval = $interval(function() {
-                $scope.timeLeft = startTime - elapsed;
+            scope.$watch(attrs.time, function(value) {
+                startTime = value * 1000;
+                updateTime();
+                element.text(dateFilter(startTime, scope.format));
+            });
+
+            function updateTime() {
+                scope.timeLeft = startTime - elapsed;
                 elapsed = Date.now() - start;
                 translate = Math.round(elapsed * 100 * 100 / startTime ) / 100;
                 background.style.transform = `translateX(-${translate}%)`;
@@ -65,18 +79,44 @@ app
                     background.style.backgroundColor = `red`;
                 }
                 if(startTime - elapsed <= 0) {
-                    $scope.timeLeft = 0;
-                    $interval.cancel(timeInterval);
+                    scope.timeLeft = 0;
+                    $interval.cancel(timeoutId);
                     $location.path('/summary')
                 }
-            }, 1);
-        });
 
-    }])
-    .directive('time', [function($scope) {
-        return {
-            template: require("./components/time.component.html")
+                element.text(dateFilter(scope.timeLeft, scope.format));
+            }
+
+
+
+            element.on('$destroy', function() {
+                $interval.cancel(timeoutId);
+            });
+
+            // start the UI update process; save the timeoutId for canceling
+            scope.$on('gameStartedBroadcast', function(){
+
+
+                start = Date.now();
+
+
+                console.log("recieeeved game start");
+
+                timeoutId = $interval(function() {
+                    updateTime(); // update DOM
+                }, 1);
+            });
         }
+
+        return {
+            link: link,
+            template: require("./components/time.component.html")
+
+        }
+
+        // return {
+        //     restricts: 'ACE',
+        // }
     }]);
 
 
