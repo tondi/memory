@@ -10,7 +10,7 @@ body {
     /*max-width: 760px;*/
 }
 
-.container {
+body > [ng-view] {
     display: flex;
     justify-content: center;
     align-items: center;

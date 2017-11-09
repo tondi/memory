@@ -20,6 +20,10 @@ app.config(function($routeProvider) {
             template: require("./components/game.component.html"),
             //component: 'game'
         })
+        .when("/mode/90", {
+            template: require("./components/game.component.html"),
+            //component: 'game'
+        })
         .when("/summary", {
             template: require("./components/summary.component.html")
         })
@@ -28,25 +32,45 @@ app.config(function($routeProvider) {
         });
 });
 
-app
-    .controller('timeCtrl', ['$scope', '$interval', '$window', function($scope, $interval, $window) {
+app.controller('gameCtrl', ['$scope', '$window', function ($scope, $window) {
+    $scope.time = $window.location.hash.split('').splice($window.location.hash.length - 2,).join('');
+    $scope.$on('gameStarted', function(){
+        $scope.$broadcast('gameStartedBroadcast', {})
+    });
+}]);
 
-        console.log("window locaion:", $window.location.search)
+app
+    .controller('timeCtrl', ['$scope', '$rootScope', '$interval', '$window', '$location', function($scope, $rootScope, $interval, $window, $location) {
 
         let startTime = 10000;
-        let start = Date.now();
-        let elapsed;
+        $scope.timeLeft = startTime;
 
-        let background = document.querySelector(".time-bar__background");
-        let translate = 0;
+        $scope.$on('gameStartedBroadcast', function(){
+            console.log("recieeeved game start");
 
-        $interval(function() {
-            $scope.timeLeft = startTime - elapsed;
-            elapsed = Date.now() - start;
-            translate = Math.round(elapsed * 100 * 100 / startTime ) / 100;
-            background.style.transform = `translateX(-${translate}%)`;
-        }, 1)
 
+            let start = Date.now();
+            let timeLeft;
+            let elapsed;
+
+            let background = document.querySelector(".time-bar__background");
+            let translate = 0;
+
+            let timeInterval = $interval(function() {
+                $scope.timeLeft = startTime - elapsed;
+                elapsed = Date.now() - start;
+                translate = Math.round(elapsed * 100 * 100 / startTime ) / 100;
+                background.style.transform = `translateX(-${translate}%)`;
+                if(startTime / 100 * 20 > startTime - elapsed) {
+                    background.style.backgroundColor = `red`;
+                }
+                if(startTime - elapsed <= 0) {
+                    $scope.timeLeft = 0;
+                    $interval.cancel(timeInterval);
+                    $location.path('/summary')
+                }
+            }, 1);
+        });
 
     }])
     .directive('time', [function($scope) {
@@ -58,7 +82,7 @@ app
 
 
 app
-    .controller('gameCtrl', ['$scope', '$timeout', '$location', function($scope, $timeout, $location) {
+    .controller('playfieldCtrl', ['$scope', '$rootScope', '$timeout', '$location', function($scope, $rootScope, $timeout, $location) {
         $scope.imagesPath = "/img/";
         let images = [
             '1.jpg',
@@ -97,12 +121,23 @@ app
             $location.path('/summary')
         };
 
+        let gameStarted = false;
+
         $scope.showCard = function ($event) {
+
+            if(!gameStarted) {
+                gameStarted = !gameStarted;
+                $scope.$emit("gameStarted", {});
+            }
 
             let clickedCard = $event.target;
             let clickedSrc = clickedCard.querySelector(".back").src;
 
+
+
             if($scope.shown.length == 1) {
+
+
                 // $scope.shown = [];
                 if($scope.shown.filter(el => el.src == clickedSrc).length > 0
                     &&
@@ -110,17 +145,29 @@ app
                     &&
                     done.filter(el => el == clickedCard).length == 0) {
 
-                    $scope.shown[0].element.classList.add("done")
-                    clickedCard.classList.add("done")
+                    $scope.shown[0].element.classList.add("done");
+                    clickedCard.classList.add("done");
                     done.push($scope.shown[0].element);
                     done.push(clickedCard);
-                    console.log(done);
-                    $scope.shown = [];
-                    $timeout.cancel(timeout);
+                    //console.log(done);
+                    //$scope.shown = [];
+                    // $timeout.cancel(timeout);
+                } else {
+                    timeout = $timeout(() => {
+                        if($scope.shown[0]) {
+                            $scope.shown[0].element.classList.remove("flip");
+                        }
+                        if($scope.shown[1]) {
+                            $scope.shown[1].element.classList.remove("flip");
+                        }
+                        $scope.shown = [];
+                    }, 1000);
                 }
             }
 
             if($scope.shown.length == 2) {
+                $timeout.cancel(timeout);
+
                 $scope.shown[0].element.classList.remove("flip");
                 $scope.shown[1].element.classList.remove("flip");
                 // return;
@@ -128,8 +175,6 @@ app
                 $scope.shown.push({element: clickedCard, src: clickedSrc});
                 clickedCard.classList.add("flip");
                 return;
-            } else {
-                $timeout.cancel(timeout);
             }
             clickedCard.classList.add("flip");
 
@@ -137,23 +182,14 @@ app
 
             $scope.shown.push({element: clickedCard, src: clickedSrc});
 
-            timeout = $timeout(() => {
-                console.log("cleaning..");
-                if($scope.shown[0]) {
-                    $scope.shown[0].element.classList.remove("flip");
-                }
-                if($scope.shown[1]) {
-                    $scope.shown[1].element.classList.remove("flip");
-                }
-                $scope.shown = [];
-            }, 1000);
+
 
             if(done.length == 16) {
                 // you won the game
                 $location.path('/summary')
             }
 
-            console.log($scope.shown);
+            //console.log($scope.shown);
         }
 
     }])

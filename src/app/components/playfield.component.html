@@ -1,4 +1,4 @@
-<div ng-controller="gameCtrl" class="playfield">
+<div ng-controller="playfieldCtrl" class="playfield">
     <div ng-repeat="name in images track by $index" class="playfield__item" ng-click="showCard($event)">
         <div class="flipper">
             <img ng-src="{{imagesPath + name}}" class="playfield__image back">
